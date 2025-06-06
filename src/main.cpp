@@ -1,31 +1,47 @@
 // Othello App
 // main.cpp
 
-#include <iostream> // for std::cout std::cin std::endl std::cerr
-#include <iomanip>  // for std::hex
-#include <sstream>  // for parsing cmdline prompt
 #include <cstdint>  // for uint64_t. we could use unsigned int, but this is more specific
-#include <vector> 
+#include <iomanip>  // for std::hex
+#include <iostream> // for std::cout std::cin std::endl std::cerr
+#include <sstream>  // for parsing cmdline prompt
+#include <vector>
 
-#include "GameManager.hpp"
 #include "Board.hpp"
+#include "GameManager.hpp"
+#include "GameMode.hpp"
 
 // main.cpp
+int main(int argc, char **argv) {
 
-enum GameMode : int {
-    HUMAN_HUMAN = 0,
-    HUMAN_BOT = 1,
-    BOT_HUMAN =2,
-    BOT_BOT = 3
-};
+    // Args
+    if (argc != 2) {
+        std::cout << "[USAGE] Expected game mode. ./main <mode>" << std::endl;
+        return 1;
+    }
 
-int main()
-{
-    std::cout << "Welcome to Othello! \n";
+    // Set Game Mode
+    int game_mode = HUMAN_HUMAN;
+    if (argc > 1) {
+        char arg = argv[1][0]; // Take the first character
+        switch (arg) {
+            case '1':
+                game_mode = HUMAN_BOT;
+                break;
+            case '2':
+                game_mode = BOT_HUMAN;
+                break;
+            case '3':
+                game_mode = BOT_BOT;
+                break;
+            default:
+                break;
+        }
+    }
 
-    GameManager game(HUMAN_HUMAN);
-    game.play_terminal_version();
+    // Spin up an instance of Othello and play!
+    GameManager game;
+    game.play_terminal_version(game_mode);
 
     return 0;
 }
-
