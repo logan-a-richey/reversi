@@ -1,6 +1,5 @@
 #!/bin/bash
-
-#!/bin/bash
+# make_kr.sh
 
 # Ensure we're in the root of the project (where .clang-format lives)
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"

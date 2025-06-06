@@ -1,4 +1,5 @@
 #!/bin/bash
+# make_allman.sh
 
 # Ensure we're in the root of the project (where .clang-format should live)
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
