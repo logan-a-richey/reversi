@@ -2,8 +2,8 @@
 
 #pragma once
 
-#include <cstdint>
 #include "Engine.hpp"
+#include <cstdint>
 
 class Board;
 

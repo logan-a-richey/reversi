@@ -5,8 +5,8 @@
 #include <iostream>
 #include <vector>
 
-#include "RandomEngine.hpp"
 #include "Board.hpp"
+#include "RandomEngine.hpp"
 
 RandomEngine::RandomEngine()
 {

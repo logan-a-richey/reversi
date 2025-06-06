@@ -21,21 +21,21 @@ constexpr uint64_t FILE_H = 0x8080808080808080ULL;
 /*****************************************************************************/
 // Public:
 
-// TODO
 uint64_t GameManager::get_terminal_move(const Board &board)
 {
     static std::regex pattern("^[a-h][1-8]$");
-
-    // std::cout << "[INFO] In get_terminal_move" << std::endl;
-
     while (true)
     {
         std::string str_move;
 
         if (board.turn == 'b')
+        {
             std::cout << "Player X to move: ";
+        }
         else
+        {
             std::cout << "Player O to move: ";
+        }
 
         std::cin >> str_move;
 
@@ -57,6 +57,7 @@ uint64_t GameManager::get_terminal_move(const Board &board)
             else
             {
                 std::cout << "That is not a legal move. Try again." << std::endl;
+                continue;
             }
         }
         else
@@ -69,19 +70,9 @@ uint64_t GameManager::get_terminal_move(const Board &board)
 
 void GameManager::play_terminal_version([[maybe_unused]] int mode = HUMAN_HUMAN)
 {
-    std::cout << "Playing game." << std::endl;
-
-    // TODO
-    // Engine engine;
-
     RandomEngine engine;
 
-    Board board = get_starting_position();
-
-    print_board(board);
-
     is_playing_game = true;
-
     bool b_is_human = true;
     bool w_is_human = true;
 
@@ -102,7 +93,10 @@ void GameManager::play_terminal_version([[maybe_unused]] int mode = HUMAN_HUMAN)
             break;
     }
 
-    // Game Loop:
+    // ===== Game Loop ======
+    Board board = get_starting_position();
+    print_board(board);
+
     while (is_playing_game)
     {
         // Move Input:
@@ -152,9 +146,8 @@ void GameManager::play_terminal_version([[maybe_unused]] int mode = HUMAN_HUMAN)
         print_board(board);
     }
 
-    // Exit message
-
-    print_board(board);
+    // Game over message
+    print_board(board); // Print the final positoin
 
     PieceCount count = get_piece_count(board);
     if (count.white > count.black)
@@ -248,6 +241,7 @@ uint64_t GameManager::get_legal(const Board &board)
     // Direction masks
     const int directions[8] = {1, -1, 8, -8, 9, -9, 7, -7};
 
+    /*
     for (int d = 0; d < 8; ++d)
     {
         int dir = directions[d];
@@ -277,7 +271,28 @@ uint64_t GameManager::get_legal(const Board &board)
             potential = next & opponent;
         }
     }
+    */
+    // TODO
+    for (int d = 0; d < 8; ++d)
+    {
+        int dir = directions[d];
+        uint64_t mask = opponent;
+        uint64_t edge_mask = ~0ULL;
 
+        if (dir == 1 || dir == 9 || dir == -7)
+            edge_mask = ~FILE_H;
+        if (dir == -1 || dir == -9 || dir == 7)
+            edge_mask = ~FILE_A;
+
+        uint64_t potential = shift(player, dir) & mask & edge_mask;
+
+        while (potential)
+        {
+            uint64_t next = shift(potential, dir) & edge_mask;
+            legal_moves |= next & empty;
+            potential = next & opponent;
+        }
+    }
     return legal_moves;
 }
 
@@ -359,10 +374,6 @@ uint64_t GameManager::shift(uint64_t b, int dir)
             return (b << 1) & ~FILE_H; // East
         case -1:
             return (b >> 1) & ~FILE_A; // West
-        case 8:
-            return (b << 8); // North
-        case -8:
-            return (b >> 8); // South
         case 9:
             return (b << 9) & ~FILE_H; // NE
         case -9:
@@ -371,6 +382,10 @@ uint64_t GameManager::shift(uint64_t b, int dir)
             return (b << 7) & ~FILE_A; // NW
         case -7:
             return (b >> 7) & ~FILE_H; // SE
+        case 8:
+            return (b << 8); // North
+        case -8:
+            return (b >> 8); // South
         default:
             return 0;
     }

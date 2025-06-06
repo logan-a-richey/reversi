@@ -8,7 +8,7 @@ class Board;
 
 class Engine
 {
-public:
+  public:
     virtual ~Engine() = default;
     virtual uint64_t get_move(const Board &board) = 0;
 };
