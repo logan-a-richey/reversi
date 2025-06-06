@@ -10,7 +10,8 @@
 class Board;
 class PieceCount;
 
-class GameManager {
+class GameManager
+{
   public:
     GameManager() = default;
     ~GameManager() = default;

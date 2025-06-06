@@ -11,8 +11,10 @@
 #include "GameManager.hpp"
 #include "GameMode.hpp"
 
-int set_mode(char arg) {
-    switch (arg) {
+int set_mode(char arg)
+{
+    switch (arg)
+    {
         case '1':
             return HUMAN_BOT;
             break;
@@ -28,11 +30,13 @@ int set_mode(char arg) {
 }
 
 // main.cpp
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
     int game_mode = HUMAN_HUMAN;
 
     // specific terminal usage of the game: $ ./main <mode>
-    if (argc >= 2) {
+    if (argc >= 2)
+    {
         char arg = argv[1][0];
         game_mode = set_mode(arg);
     }

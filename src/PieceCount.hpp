@@ -1,9 +1,12 @@
 // PieceCount.hpp
 
-class PieceCount {
+class PieceCount
+{
   public:
     int black;
     int white;
 
-    PieceCount(int b, int w) : black(b), white(w) {}
+    PieceCount(int b, int w) : black(b), white(w)
+    {
+    }
 };
