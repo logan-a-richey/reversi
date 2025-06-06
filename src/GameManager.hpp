@@ -26,9 +26,7 @@ class GameManager {
 
     void print_board(const Board &board);
 
-    std::string prompt_for_move();
-
-    uint64_t parse_move(const std::string &str_move);
+    uint64_t get_terminal_move(const Board &board);
 
     uint64_t get_legal(const Board &board);
 

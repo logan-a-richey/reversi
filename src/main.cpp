@@ -11,32 +11,30 @@
 #include "GameManager.hpp"
 #include "GameMode.hpp"
 
+int set_mode(char arg) {
+    switch (arg) {
+        case '1':
+            return HUMAN_BOT;
+            break;
+        case '2':
+            return BOT_HUMAN;
+            break;
+        case '3':
+            return BOT_BOT;
+            break;
+        default:
+            return HUMAN_HUMAN;
+    }
+}
+
 // main.cpp
 int main(int argc, char **argv) {
-
-    // Args
-    if (argc != 2) {
-        std::cout << "[USAGE] Expected game mode. ./main <mode>" << std::endl;
-        return 1;
-    }
-
-    // Set Game Mode
     int game_mode = HUMAN_HUMAN;
-    if (argc > 1) {
-        char arg = argv[1][0]; // Take the first character
-        switch (arg) {
-            case '1':
-                game_mode = HUMAN_BOT;
-                break;
-            case '2':
-                game_mode = BOT_HUMAN;
-                break;
-            case '3':
-                game_mode = BOT_BOT;
-                break;
-            default:
-                break;
-        }
+
+    // specific terminal usage of the game: $ ./main <mode>
+    if (argc >= 2) {
+        char arg = argv[1][0];
+        game_mode = set_mode(arg);
     }
 
     // Spin up an instance of Othello and play!

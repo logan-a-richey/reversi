@@ -20,46 +20,44 @@ constexpr uint64_t FILE_H = 0x8080808080808080ULL;
 // Public:
 
 // TODO
-std::string GameManager::prompt_for_move() {
+uint64_t GameManager::get_terminal_move(const Board &board) {
     static std::regex pattern("^[a-h][1-8]$");
 
-    std::cout << "[INFO] In prompt_for_move" << std::endl;
+    // std::cout << "[INFO] In get_terminal_move" << std::endl;
 
     while (true) {
         std::string str_move;
 
-        std::cout << "Input: ";
-        std::cout.flush();
+        if (board.turn == 'b')
+            std::cout << "Player X to move: ";
+        else
+            std::cout << "Player O to move: ";
 
-        if (!(std::cin >> str_move)) {
-            // Input failure (e.g. EOF or bad stream state)
-            std::cin.clear(); // Reset stream state
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(),
-                            '\n'); // Clear input buffer
-            std::cout << "Input error. Try again." << std::endl;
-            continue;
-        }
+        std::cin >> str_move;
 
         if (std::regex_match(str_move, pattern)) {
-            return str_move;
+            char file = str_move[0];
+            char rank = str_move[1];
+
+            int col = file - 'a';
+            int row = rank - '1';
+
+            int bit_index = row * 8 + col;
+
+            uint64_t int_move = 1ULL << bit_index;
+            if (int_move & board.legal) {
+                return int_move;
+            } else {
+                std::cout << "That is not a legal move. Try again." << std::endl;
+            }
         } else {
             std::cout << "Invalid input. Expected format like 'a1' or 'h8'." << std::endl;
+            continue;
         }
     }
 }
 
-uint64_t GameManager::parse_move(const std::string &str_move) {
-    char file = str_move[0];
-    char rank = str_move[1];
-
-    int col = file - 'a';
-    int row = rank - '1';
-
-    int bit_index = row * 8 + col;
-    return 1ULL << bit_index;
-}
-
-void GameManager::play_terminal_version(int mode = HUMAN_HUMAN) {
+void GameManager::play_terminal_version([[maybe_unused]] int mode = HUMAN_HUMAN) {
     std::cout << "Playing game." << std::endl;
 
     // TODO
@@ -71,20 +69,20 @@ void GameManager::play_terminal_version(int mode = HUMAN_HUMAN) {
 
     is_playing_game = true;
 
-    bool x_is_human = true;
-    bool o_is_human = true;
+    bool b_is_human = true;
+    bool w_is_human = true;
 
     // Set Mode
     switch (mode) {
         case HUMAN_BOT:
-            o_is_human = false;
+            w_is_human = false;
             break;
         case BOT_HUMAN:
-            x_is_human = false;
+            b_is_human = false;
             break;
         case BOT_BOT:
-            x_is_human = false;
-            o_is_human = false;
+            b_is_human = false;
+            w_is_human = false;
             break;
         default:
             break;
@@ -96,32 +94,16 @@ void GameManager::play_terminal_version(int mode = HUMAN_HUMAN) {
         std::string str_move = "";
         uint64_t int_move = 0;
 
-        std::cout << "[INFO] In human move" << std::endl;
-        str_move = prompt_for_move(); // WAIT FOR USER INPUT
-        int_move = parse_move(str_move);
-
-        /*
-        if ( (board.turn == 'x' && x_is_human) || (board.turn == 'o' && o_is_human) )
-        {
-            // TODO
+        // White Engine
+        if ((board.turn == 'w') && !w_is_human) {
+            std::cout << "[INFO] COMPUTER WHITE: " << std::endl;
+        } else if ((board.turn == 'b') && !b_is_human) {
+            std::cout << "[INFO] COMPUTER BLACK: " << std::endl;
+        } else {
             std::cout << "[INFO] In human move" << std::endl;
-            str_move = prompt_for_move(); // WAIT FOR USER INPUT
-            int_move = parse_move(str_move);
-        }
-        else
-        {
-            // TODO
-            // Engine Move
-        }
-        */
-        if (int_move & ~board.legal) {
-            std::cout << "Invalid move. Expected move in format [a-h][1-8]. Try again."
-                      << std::endl;
         }
 
-        // TODO
-        // std::cout << "[DEBUG] MAKING MOVE. ENDING GAME" << std::endl;
-        // break;
+        int_move = get_terminal_move(board); // WAIT FOR USER INPUT
 
         // Make the move:
         board = make_move(board, int_move);
