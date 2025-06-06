@@ -1,49 +1,33 @@
-// Othello App
 // main.cpp
 
-#include <cstdint>  // for uint64_t. we could use unsigned int, but this is more specific
-#include <iomanip>  // for std::hex
-#include <iostream> // for std::cout std::cin std::endl std::cerr
-#include <sstream>  // for parsing cmdline prompt
-#include <vector>
+#include <iostream>
 
-#include "Board.hpp"
-#include "GameManager.hpp"
-#include "GameMode.hpp"
-
-int set_mode(char arg)
+int main(int argc, char** argv)
 {
-    switch (arg)
+    // Game Loop
+    
+    /*
+    auto game = GameManager();
+    auto black_agent = std::make_unique<HumanAgent_Terminal>();
+    auto white_agent = std::make_unique<BotAgent_Random>();
+
+    while (!game.is_game_over()) 
     {
-        case '1':
-            return HUMAN_BOT;
-            break;
-        case '2':
-            return BOT_HUMAN;
-            break;
-        case '3':
-            return BOT_BOT;
-            break;
-        default:
-            return HUMAN_HUMAN;
+        Agent& agent = game.current_player() == 0 ? *black_agent : *white_agent;
+        int move = agent.get_move(game.current_state());
+
+        auto legal = game.legal_moves();
+        if (std::find(legal.begin(), legal.end(), move) == legal.end()) 
+        {
+            std::cout << "Illegal move!\n";
+            continue;
+        }
+
+        game.make_move(move);
+        render(game.current_state());  // Print board to terminal
     }
-}
-
-// main.cpp
-int main(int argc, char **argv)
-{
-    int game_mode = HUMAN_HUMAN;
-
-    // specific terminal usage of the game: $ ./main <mode>
-    if (argc >= 2)
-    {
-        char arg = argv[1][0];
-        game_mode = set_mode(arg);
-    }
-
-    // Spin up an instance of Othello and play!
-    GameManager game;
-    game.play_terminal_version(game_mode);
+    */
 
     return 0;
 }
+
