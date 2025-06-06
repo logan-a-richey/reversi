@@ -1,6 +1,8 @@
 // main.cpp
 
 #include <iostream>
+#include <cstdint>
+#include <memory>
 
 int main(int argc, char** argv)
 {
