@@ -7,11 +7,20 @@
 class Board 
 {
 public:
-    uint64_t white;
+    // bitboard representing location of all black piece
     uint64_t black;
-    char turn; // 'W','B'
+    
+    // bitboard representing location of all white pieces
+    uint64_t white;
+    
+    // turn: can be 'B' or 'W'
+    char turn; 
+    
+    // legal moves are loaded into the position upon construction
+    // legal moves need to be recalculated if we mutate the turn variable
     uint64_t legal;
 
+    // constructor
     Board(uint64_t b, uint64_t w, char t);
 };
 

@@ -40,7 +40,6 @@ void print_bb(uint64_t bb) {
 void print_board(const Board& board) {
     std::cout << "  a b c d e f g h";
     uint64_t bit = 1;
-    int it = 0;
     for (int i = 0; i < 64; ++i) {
         if (i % 8 == 0) {
             std::cout << "\n" << i / 8 + 1 << " ";

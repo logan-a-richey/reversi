@@ -90,10 +90,12 @@ int main(int argc, char** argv)
         std::cout << "Turn: " <<  msg << std::endl;
         print_board(board);
         
-        auto& current_agent = (board.turn == 'B') ? black_agent : white_agent;
+        // auto& current_agent = (board.turn == 'B') ? black_agent : white_agent;
+        // uint64_t move = current_agent->get_move(board);
         
-        uint64_t move = current_agent->get_move(board);
-        
+        IAgent& current_agent = *(board.turn == 'B' ? black_agent : white_agent);
+        uint64_t move = current_agent.get_move(board);
+
         if (!(move & board.legal))
         {
             std::cout << "Illegal move. Try again." << std::endl;
