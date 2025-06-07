@@ -62,10 +62,11 @@ void print_board(const Board& board) {
 /*****************************************************************************/
 // Get Legal:
 // Border masks
-constexpr uint64_t BORDER_N = 0x00000000000000FFULL;
-constexpr uint64_t BORDER_S = 0xFF00000000000000ULL;
-constexpr uint64_t BORDER_E = 0x8080808080808080ULL;
-constexpr uint64_t BORDER_W = 0x0101010101010101ULL;
+constexpr uint64_t RANK_1 = 0x00000000000000FFULL;
+constexpr uint64_t RANK_8 = 0xFF00000000000000ULL;
+
+constexpr uint64_t FILE_A = 0x0101010101010101ULL;
+constexpr uint64_t FILE_H = 0x8080808080808080ULL;
 
 using DirectionScanner = bool(*)(uint64_t, uint64_t, uint64_t);
 
@@ -79,14 +80,14 @@ struct Direction
 
 // TODO - check this 
 static const std::vector<Direction> DIRECTIONS = {
-    { [](uint64_t x){ return x << 8; }, BORDER_N }, // N
-    { [](uint64_t x){ return x >> 8; }, BORDER_S }, // S
-    { [](uint64_t x){ return x << 1; }, BORDER_N }, // E
-    { [](uint64_t x){ return x >> 1; }, BORDER_N }, // W
-    { [](uint64_t x){ return x << 9; }, BORDER_N | BORDER_E }, // NE
-    { [](uint64_t x){ return x << 7; }, BORDER_N | BORDER_W }, // NW
-    { [](uint64_t x){ return x >> 7; }, BORDER_S | BORDER_E }, // NE
-    { [](uint64_t x){ return x >> 9; }, BORDER_S | BORDER_W }  // NE
+    { [](uint64_t x){ return x << 8; }, RANK_8 }, // N
+    { [](uint64_t x){ return x >> 8; }, RANK_1 }, // S
+    { [](uint64_t x){ return x << 1; }, FILE_H }, // E
+    { [](uint64_t x){ return x >> 1; }, FILE_A }, // W
+    { [](uint64_t x){ return x << 9; }, RANK_8 | FILE_H }, // NE
+    { [](uint64_t x){ return x << 7; }, RANK_8 | FILE_A }, // NW
+    { [](uint64_t x){ return x >> 7; }, RANK_1 | FILE_H }, // SE
+    { [](uint64_t x){ return x >> 9; }, RANK_1 | FILE_A }  // SW
 };
 
 static bool generic_search(uint64_t plr, uint64_t opp, uint64_t sq, const Direction& dir)
@@ -123,8 +124,10 @@ static bool generic_search(uint64_t plr, uint64_t opp, uint64_t sq, const Direct
 uint64_t get_legal_moves(const Board& board)
 {
     uint64_t legal_moves = 0;
+    
     uint64_t plr = (board.turn == 'B') ? board.black : board.white;
     uint64_t opp = (board.turn == 'B') ? board.white : board.black;
+    
     uint64_t occ = plr | opp;
 
     for (int i = 0; i < 64; ++i)
@@ -177,8 +180,9 @@ static uint64_t generic_flip(uint64_t plr, uint64_t opp, uint64_t sq, const Dire
 uint64_t get_flipped(const Board& board, uint64_t move)
 {
     uint64_t flipped = 0ULL;
+
     uint64_t plr = (board.turn == 'B') ? board.black : board.white;
-    uint64_t opp = (board.turn == 'W') ? board.white : board.black;
+    uint64_t opp = (board.turn == 'B') ? board.white : board.black;
 
     for (const auto& dir : DIRECTIONS)
     {

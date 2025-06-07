@@ -49,6 +49,9 @@ int main(int argc, char** argv)
 
     while(board.legal != 0)
     {
+        std::cout << std::endl;
+        std::string msg = (board.turn == 'B') ? "Black" : "White";
+        std::cout << "Turn: " <<  msg << std::endl;
         print_board(board);
         
         auto& current_agent = (board.turn == 'B') ? black_agent : white_agent;

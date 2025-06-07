@@ -18,7 +18,7 @@ uint64_t AgentRandomBot::get_move(const Board& board)
 {
     std::vector<uint64_t> moves;
 
-    for (int i = 1; i < 64; ++i)
+    for (int i = 0; i < 64; ++i)
     {
         if (1ULL << i & board.legal) moves.push_back(1ULL << i);
     }
