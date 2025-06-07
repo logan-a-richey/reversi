@@ -63,7 +63,10 @@ int main(int argc, char** argv)
         
         board = make_move(board, move);
     }
+    // Print final position
+    print_board(board);
 
+    // TODO - print final score
     return 0;
 }
 

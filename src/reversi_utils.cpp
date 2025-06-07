@@ -3,6 +3,7 @@
 #include <iostream>
 #include <cstdint>
 #include <vector>
+#include <functional>
 
 #include "Board.h"
 #include "reversi_utils.h"
@@ -68,326 +69,127 @@ constexpr uint64_t BORDER_W = 0x0101010101010101ULL;
 
 using DirectionScanner = bool(*)(uint64_t, uint64_t, uint64_t);
 
-// NORTH
-static bool search_n(uint64_t plr, uint64_t opp, uint64_t sq) {
-    uint64_t mask = sq;
-    bool seen_opp = false;
-    while (!(mask & BORDER_N)) {
-        mask <<= 8;
-        if ((mask & ~(plr | opp)) != 0) return false;
-        if (mask & opp) seen_opp = true;
-        else if (mask & plr) return seen_opp;
-        else return false;
-    }
-    return false;
-}
+using ShiftFunc = std::function<uint64_t(uint64_t)>;
 
-// SOUTH
-static bool search_s(uint64_t plr, uint64_t opp, uint64_t sq) {
-    uint64_t mask = sq;
-    bool seen_opp = false;
-    while (!(mask & BORDER_S)) {
-        mask >>= 8;
-        if ((mask & ~(plr | opp)) != 0) return false;
-        if (mask & opp) seen_opp = true;
-        else if (mask & plr) return seen_opp;
-        else return false;
-    }
-    return false;
-}
+struct Direction
+{
+    ShiftFunc shift;
+    uint64_t border_mask;
+};
 
-// EAST
-static bool search_e(uint64_t plr, uint64_t opp, uint64_t sq) {
-    uint64_t mask = sq;
-    bool seen_opp = false;
-    while (!(mask & BORDER_E)) {
-        mask <<= 1;
-        if ((mask & ~(plr | opp)) != 0) return false;
-        if (mask & opp) seen_opp = true;
-        else if (mask & plr) return seen_opp;
-        else return false;
-    }
-    return false;
-}
+// TODO - check this 
+static const std::vector<Direction> DIRECTIONS = {
+    { [](uint64_t x){ return x << 8; }, BORDER_N }, // N
+    { [](uint64_t x){ return x >> 8; }, BORDER_S }, // S
+    { [](uint64_t x){ return x << 1; }, BORDER_N }, // E
+    { [](uint64_t x){ return x >> 1; }, BORDER_N }, // W
+    { [](uint64_t x){ return x << 9; }, BORDER_N | BORDER_E }, // NE
+    { [](uint64_t x){ return x << 7; }, BORDER_N | BORDER_W }, // NW
+    { [](uint64_t x){ return x >> 7; }, BORDER_S | BORDER_E }, // NE
+    { [](uint64_t x){ return x >> 9; }, BORDER_S | BORDER_W }  // NE
+};
 
-// WEST
-static bool search_w(uint64_t plr, uint64_t opp, uint64_t sq) {
-    uint64_t mask = sq;
-    bool seen_opp = false;
-    while (!(mask & BORDER_W)) {
-        mask >>= 1;
-        if ((mask & ~(plr | opp)) != 0) return false;
-        if (mask & opp) seen_opp = true;
-        else if (mask & plr) return seen_opp;
-        else return false;
+static bool generic_search(uint64_t plr, uint64_t opp, uint64_t sq, const Direction& dir)
+{
+    // already at edge
+    if (sq & dir.border_mask) 
+    {
+        return false; 
     }
-    return false;
-}
 
-// NORTHEAST
-static bool search_ne(uint64_t plr, uint64_t opp, uint64_t sq) {
+    // compare bits
     uint64_t mask = sq;
     bool seen_opp = false;
-    while (!(mask & BORDER_N) && !(mask & BORDER_E)) {
-        mask <<= 9;
-        if ((mask & ~(plr | opp)) != 0) return false;
-        if (mask & opp) seen_opp = true;
-        else if (mask & plr) return seen_opp;
-        else return false;
-    }
-    return false;
-}
 
-// NORTHWEST
-static bool search_nw(uint64_t plr, uint64_t opp, uint64_t sq) {
-    uint64_t mask = sq;
-    bool seen_opp = false;
-    while (!(mask & BORDER_N) && !(mask & BORDER_W)) {
-        mask <<= 7;
-        if ((mask & ~(plr | opp)) != 0) return false;
-        if (mask & opp) seen_opp = true;
-        else if (mask & plr) return seen_opp;
-        else return false;
-    }
-    return false;
-}
+    while (true)
+    {
+        mask = dir.shift(mask);
+        if (mask == 0 || (mask & dir.border_mask)) {
+            return false;
+        }
 
-// SOUTHEAST
-static bool search_se(uint64_t plr, uint64_t opp, uint64_t sq) {
-    uint64_t mask = sq;
-    bool seen_opp = false;
-    while (!(mask & BORDER_S) && !(mask & BORDER_E)) {
-        mask >>= 7;
-        if ((mask & ~(plr | opp)) != 0) return false;
-        if (mask & opp) seen_opp = true;
-        else if (mask & plr) return seen_opp;
-        else return false;
-    }
-    return false;
-}
-
-// SOUTHWEST
-static bool search_sw(uint64_t plr, uint64_t opp, uint64_t sq) {
-    uint64_t mask = sq;
-    bool seen_opp = false;
-    while (!(mask & BORDER_S) && !(mask & BORDER_W)) {
-        mask >>= 9;
-        if ((mask & ~(plr | opp)) != 0) return false;
-        if (mask & opp) seen_opp = true;
-        else if (mask & plr) return seen_opp;
-        else return false;
+        if (mask & opp) {
+            seen_opp = true;
+        } else if (mask & plr) {
+            return seen_opp;
+        } else {
+            // empty square
+            return false;
+        }
     }
     return false;
 }
 
 uint64_t get_legal_moves(const Board& board)
 {
-    static const std::vector<DirectionScanner> direction_scanners = {
-        &search_n, &search_s, &search_e, &search_w,
-        &search_ne, &search_nw, &search_se, &search_sw
-    };
-
     uint64_t legal_moves = 0;
-    uint64_t plr = 0;
-    uint64_t opp = 0;
+    uint64_t plr = (board.turn == 'B') ? board.black : board.white;
+    uint64_t opp = (board.turn == 'B') ? board.white : board.black;
+    uint64_t occ = plr | opp;
 
-    if (board.turn == 'B') {
-        plr = board.black;
-        opp = board.white;
-    } else if (board.turn == 'W') {
-        plr = board.white;
-        opp = board.black;
-    } else {
-        std::cerr << "[E: get_legal_moves] Invalid turn: " << board.turn << std::endl;
-        return 0;
-    }
-
-    uint64_t occ = board.white | board.black;
     for (int i = 0; i < 64; ++i)
     {
         uint64_t sq = 1ULL << i;
         if (sq & occ) continue;
 
-        for (auto d : direction_scanners) {
-            if (d(plr, opp, sq)) {
+        for (const auto& dir : DIRECTIONS) 
+        {
+            if (generic_search(plr, opp, sq, dir))
+            {
                 legal_moves |= sq;
-                break; // One valid direction is enough
+                // only break inside of this nested loop. 
+                // will continue for all 64 squares.
+                break;             
             }
         }
     }
-
     return legal_moves;
 }
 
 /*****************************************************************************/
 // Flip tiles
 
-static uint64_t flip_n(uint64_t plr, uint64_t opp, uint64_t move) {
-    uint64_t mask = move;
-    uint64_t flipped = 0;
-    while (!(mask & BORDER_N)) {
-        mask <<= 8;
-        if (mask & opp) {
-            flipped |= mask;
-        } else if (mask & plr) {
-            return flipped;
-        } else {
-            break;
-        }
-    }
-    return 0;
-}
+// TODO
+static uint64_t generic_flip(uint64_t plr, uint64_t opp, uint64_t sq, const Direction& dir)
+{
+    if (sq & dir.border_mask)
+        return 0ULL;
 
-static uint64_t flip_s(uint64_t plr, uint64_t opp, uint64_t move) {
-    uint64_t mask = move;
     uint64_t flipped = 0;
-    while (!(mask & BORDER_S)) {
-        mask >>= 8;
-        if (mask & opp) {
-            flipped |= mask;
-        } else if (mask & plr) {
-            return flipped;
-        } else {
-            break;
-        }
-    }
-    return 0;
-}
+    uint64_t mask = sq;
 
-static uint64_t flip_e(uint64_t plr, uint64_t opp, uint64_t move) {
-    uint64_t mask = move;
-    uint64_t flipped = 0;
-    while (!(mask & BORDER_E)) {
-        mask <<= 1;
-        if (mask & opp) {
-            flipped |= mask;
-        } else if (mask & plr) {
-            return flipped;
-        } else {
-            break;
-        }
-    }
-    return 0;
-}
+    while (true)
+    {
+        mask = dir.shift(mask);
+        if (mask == 0 || (mask & dir.border_mask))
+            return 0ULL;
 
-static uint64_t flip_w(uint64_t plr, uint64_t opp, uint64_t move) {
-    uint64_t mask = move;
-    uint64_t flipped = 0;
-    while (!(mask & BORDER_W)) {
-        mask >>= 1;
-        if (mask & opp) {
-            flipped |= mask;
-        } else if (mask & plr) {
+        if (mask & opp)
+            flipped |= mask;    
+        else if (mask & plr)
             return flipped;
-        } else {
-            break;
-        }
+        else
+            return 0ULL; // empty square
     }
-    return 0;
-}
-
-static uint64_t flip_ne(uint64_t plr, uint64_t opp, uint64_t move) {
-    uint64_t mask = move;
-    uint64_t flipped = 0;
-    while (!(mask & BORDER_N) && !(mask & BORDER_E)) {
-        mask <<= 9;
-        if (mask & opp) {
-            flipped |= mask;
-        } else if (mask & plr) {
-            return flipped;
-        } else {
-            break;
-        }
-    }
-    return 0;
-}
-
-static uint64_t flip_nw(uint64_t plr, uint64_t opp, uint64_t move) {
-    uint64_t mask = move;
-    uint64_t flipped = 0;
-    while (!(mask & BORDER_N) && !(mask & BORDER_W)) {
-        mask <<= 7;
-        if (mask & opp) {
-            flipped |= mask;
-        } else if (mask & plr) {
-            return flipped;
-        } else {
-            break;
-        }
-    }
-    return 0;
-}
-
-static uint64_t flip_se(uint64_t plr, uint64_t opp, uint64_t move) {
-    uint64_t mask = move;
-    uint64_t flipped = 0;
-    while (!(mask & BORDER_S) && !(mask & BORDER_E)) {
-        mask >>= 7;
-        if (mask & opp) {
-            flipped |= mask;
-        } else if (mask & plr) {
-            return flipped;
-        } else {
-            break;
-        }
-    }
-    return 0;
-}
-
-static uint64_t flip_sw(uint64_t plr, uint64_t opp, uint64_t move) {
-    uint64_t mask = move;
-    uint64_t flipped = 0;
-    while (!(mask & BORDER_S) && !(mask & BORDER_W)) {
-        mask >>= 9;
-        if (mask & opp) {
-            flipped |= mask;
-        } else if (mask & plr) {
-            return flipped;
-        } else {
-            break;
-        }
-    }
-    return 0;
+    return 0ULL;
 }
 
 uint64_t get_flipped(const Board& board, uint64_t move)
 {
-    using FlipFunc = uint64_t(*)(uint64_t, uint64_t, uint64_t);
-    using CheckFunc = bool(*)(uint64_t, uint64_t, uint64_t);
+    uint64_t flipped = 0ULL;
+    uint64_t plr = (board.turn == 'B') ? board.black : board.white;
+    uint64_t opp = (board.turn == 'W') ? board.white : board.black;
 
-    static const std::vector<FlipFunc> flip_funcs = {
-        flip_n, flip_s, flip_e, flip_w,
-        flip_ne, flip_nw, flip_se, flip_sw
-    };
-
-    static const std::vector<CheckFunc> check_funcs = {
-        search_n, search_s, search_e, search_w,
-        search_ne, search_nw, search_se, search_sw
-    };
-
-    uint64_t flipped = 0;
-    uint64_t plr = 0;
-    uint64_t opp = 0;
-
-    if (board.turn == 'B') {
-        plr = board.black;
-        opp = board.white;
-    } else if (board.turn == 'W') {
-        plr = board.white;
-        opp = board.black;
-    } else {
-        std::cerr << "[E: get_flipped] Invalid turn: " << board.turn << std::endl;
-        return 0;
-    }
-
-    for (size_t i = 0; i < flip_funcs.size(); ++i) {
-        if (check_funcs[i](plr, opp, move)) {
-            flipped |= flip_funcs[i](plr, opp, move);
-        }
+    for (const auto& dir : DIRECTIONS)
+    {
+        flipped |= generic_flip(plr, opp, move, dir);
     }
 
     return flipped;
 }
+
+/*****************************************************************************/
+// Make move
 
 Board make_move(const Board& board, uint64_t move)
 {
@@ -395,11 +197,24 @@ Board make_move(const Board& board, uint64_t move)
     uint64_t white = board.white ^ flipped;
     uint64_t black = board.black ^ flipped;
     
-    if (board.turn == 'B') black |= move;
-    else if (board.turn == 'W') white |= move;
+    if (board.turn == 'B') {
+        black |= move;
+    } else if (board.turn == 'W') {
+        white |= move;
+    }
+    
     char turn = (board.turn == 'B') ? 'W' : 'B';
+    
     Board new_board(black, white, turn);
-    if (new_board.legal == 0) new_board.turn = board.turn;
+    
+    // if no moves, toggle turn back to current player
+    if (new_board.legal == 0) {
+        new_board.turn = board.turn;
+    }
+    
+    // TODO
+    // check for no legal moves in the game loop. 
+    // if there are no legal moves, call game_over
     return new_board;
 }
 
