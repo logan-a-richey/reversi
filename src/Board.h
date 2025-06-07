@@ -1,10 +1,11 @@
-// Board.hpp
+// Board.h
 
 #pragma once
 
 #include <cstdint>
 
-class Board {
+class Board 
+{
 public:
     uint64_t white;
     uint64_t black;

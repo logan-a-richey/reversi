@@ -11,3 +11,6 @@ Board get_start_position();
 void print_bb(uint64_t bb);
 void print_board(const Board& board);
 uint64_t get_legal_moves(const Board& board);
+uint64_t get_flipped(const Board& board, int64_t move);
+Board make_move(const Board& board, uint64_t move);
+

@@ -59,7 +59,7 @@ void print_board(const Board& board) {
 }
 
 /*****************************************************************************/
-
+// Get Legal:
 // Border masks
 constexpr uint64_t BORDER_N = 0x00000000000000FFULL;
 constexpr uint64_t BORDER_S = 0xFF00000000000000ULL;
@@ -218,3 +218,188 @@ uint64_t get_legal_moves(const Board& board)
 
     return legal_moves;
 }
+
+/*****************************************************************************/
+// Flip tiles
+
+static uint64_t flip_n(uint64_t plr, uint64_t opp, uint64_t move) {
+    uint64_t mask = move;
+    uint64_t flipped = 0;
+    while (!(mask & BORDER_N)) {
+        mask <<= 8;
+        if (mask & opp) {
+            flipped |= mask;
+        } else if (mask & plr) {
+            return flipped;
+        } else {
+            break;
+        }
+    }
+    return 0;
+}
+
+static uint64_t flip_s(uint64_t plr, uint64_t opp, uint64_t move) {
+    uint64_t mask = move;
+    uint64_t flipped = 0;
+    while (!(mask & BORDER_S)) {
+        mask >>= 8;
+        if (mask & opp) {
+            flipped |= mask;
+        } else if (mask & plr) {
+            return flipped;
+        } else {
+            break;
+        }
+    }
+    return 0;
+}
+
+static uint64_t flip_e(uint64_t plr, uint64_t opp, uint64_t move) {
+    uint64_t mask = move;
+    uint64_t flipped = 0;
+    while (!(mask & BORDER_E)) {
+        mask <<= 1;
+        if (mask & opp) {
+            flipped |= mask;
+        } else if (mask & plr) {
+            return flipped;
+        } else {
+            break;
+        }
+    }
+    return 0;
+}
+
+static uint64_t flip_w(uint64_t plr, uint64_t opp, uint64_t move) {
+    uint64_t mask = move;
+    uint64_t flipped = 0;
+    while (!(mask & BORDER_W)) {
+        mask >>= 1;
+        if (mask & opp) {
+            flipped |= mask;
+        } else if (mask & plr) {
+            return flipped;
+        } else {
+            break;
+        }
+    }
+    return 0;
+}
+
+static uint64_t flip_ne(uint64_t plr, uint64_t opp, uint64_t move) {
+    uint64_t mask = move;
+    uint64_t flipped = 0;
+    while (!(mask & BORDER_N) && !(mask & BORDER_E)) {
+        mask <<= 9;
+        if (mask & opp) {
+            flipped |= mask;
+        } else if (mask & plr) {
+            return flipped;
+        } else {
+            break;
+        }
+    }
+    return 0;
+}
+
+static uint64_t flip_nw(uint64_t plr, uint64_t opp, uint64_t move) {
+    uint64_t mask = move;
+    uint64_t flipped = 0;
+    while (!(mask & BORDER_N) && !(mask & BORDER_W)) {
+        mask <<= 7;
+        if (mask & opp) {
+            flipped |= mask;
+        } else if (mask & plr) {
+            return flipped;
+        } else {
+            break;
+        }
+    }
+    return 0;
+}
+
+static uint64_t flip_se(uint64_t plr, uint64_t opp, uint64_t move) {
+    uint64_t mask = move;
+    uint64_t flipped = 0;
+    while (!(mask & BORDER_S) && !(mask & BORDER_E)) {
+        mask >>= 7;
+        if (mask & opp) {
+            flipped |= mask;
+        } else if (mask & plr) {
+            return flipped;
+        } else {
+            break;
+        }
+    }
+    return 0;
+}
+
+static uint64_t flip_sw(uint64_t plr, uint64_t opp, uint64_t move) {
+    uint64_t mask = move;
+    uint64_t flipped = 0;
+    while (!(mask & BORDER_S) && !(mask & BORDER_W)) {
+        mask >>= 9;
+        if (mask & opp) {
+            flipped |= mask;
+        } else if (mask & plr) {
+            return flipped;
+        } else {
+            break;
+        }
+    }
+    return 0;
+}
+
+uint64_t get_flipped(const Board& board, uint64_t move)
+{
+    using FlipFunc = uint64_t(*)(uint64_t, uint64_t, uint64_t);
+    using CheckFunc = bool(*)(uint64_t, uint64_t, uint64_t);
+
+    static const std::vector<FlipFunc> flip_funcs = {
+        flip_n, flip_s, flip_e, flip_w,
+        flip_ne, flip_nw, flip_se, flip_sw
+    };
+
+    static const std::vector<CheckFunc> check_funcs = {
+        search_n, search_s, search_e, search_w,
+        search_ne, search_nw, search_se, search_sw
+    };
+
+    uint64_t flipped = 0;
+    uint64_t plr = 0;
+    uint64_t opp = 0;
+
+    if (board.turn == 'B') {
+        plr = board.black;
+        opp = board.white;
+    } else if (board.turn == 'W') {
+        plr = board.white;
+        opp = board.black;
+    } else {
+        std::cerr << "[E: get_flipped] Invalid turn: " << board.turn << std::endl;
+        return 0;
+    }
+
+    for (size_t i = 0; i < flip_funcs.size(); ++i) {
+        if (check_funcs[i](plr, opp, move)) {
+            flipped |= flip_funcs[i](plr, opp, move);
+        }
+    }
+
+    return flipped;
+}
+
+Board make_move(const Board& board, uint64_t move)
+{
+    uint64_t flipped = get_flipped(board, move);
+    uint64_t white = board.white ^ flipped;
+    uint64_t black = board.black ^ flipped;
+    
+    if (board.turn == 'B') black |= move;
+    else if (board.turn == 'W') white |= move;
+    char turn = (board.turn == 'B') ? 'W' : 'B';
+    Board new_board(black, white, turn);
+    if (new_board.legal == 0) new_board.turn = board.turn;
+    return new_board;
+}
+
