@@ -59,6 +59,24 @@ void print_board(const Board& board) {
 }
 
 /*****************************************************************************/
+std::string get_str_move(uint64_t move)
+{
+    std::string res = "";
+
+    if (move == 0) return "invalid";
+
+    int index = 0;
+    while ((move >> index) != 1ULL) index++;
+
+    char file = 'a' + (index % 8);            
+    char rank = '1' + (index / 8);
+
+    res += file;
+    res += rank;
+    return res;
+}
+
+/*****************************************************************************/
 // Get Legal:
 // Border masks
 constexpr uint64_t RANK_1 = 0x00000000000000FFULL;

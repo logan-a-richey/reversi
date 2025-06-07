@@ -27,17 +27,19 @@ void simple_test()
 
 int main(int argc, char** argv)
 {
+    // --- Cmdline Args ---
     if (argc != 3)
     {
         std::cerr 
             << "[USAGE] ./main <player1type> <player2type>\n"
             << "  0 = human terminal\n"
-            << "  1 = random bot"
+            << "  1 = random bot\n"
+            << "  2 = minimax bot\n"
             << std::endl;
         return 1;
     }
 
-    // TODO - do with string streams
+    // --- Game Setup ---
     int p1_type = std::atoi(argv[1]);
     int p2_type = std::atoi(argv[2]);
    
@@ -48,50 +50,25 @@ int main(int argc, char** argv)
     std::unique_ptr<IAgent> black_agent = create_agent(p1_type);
     std::unique_ptr<IAgent> white_agent = create_agent(p2_type);
     
-    bool game_over = false;
-    bool black_passed = false;
-    bool white_passed = false;
-
-    while(!game_over)
+    // --- Game Loop ---
+    while(!board.is_game_over)
     {
-        std::cout << std::endl;
-        std::string msg = (board.turn == 'B') ? "Black" : "White";
-       
-        if (board.legal == 0)
-        {
-            std::cout << msg << " has no legal moves. Passing turn." << std::endl;
-            if (board.turn == 'B')
-            {
-                black_passed = true;
-                board.turn = 'W';
-            }
-            else 
-            {
-                white_passed = true;
-                board.turn = 'B';
-            }
-
-            // end game if both players have been passed
-            if (black_passed && white_passed)
-            {
-                game_over = true;
-                // break;
-            }
-
-            board.legal = get_legal_moves(board);
-            continue;
-        }
-
-        // Reset Player passed
-        black_passed = (board.turn == 'B') ? false : black_passed;
-        white_passed = (board.turn == 'W') ? false : white_passed;
-        
         // Terminal turn message:
-        std::cout << "Turn: " <<  msg << std::endl;
+        if (board.is_skipped)
+        {
+            if (board.turn == 'B') 
+                std::cout << "White turn skipped. Black to play: " << std::endl;
+            else 
+                std::cout << "Black turn skipped. White to play: " << std::endl;
+        }
+        else
+        {
+            if (board.turn == 'B')
+                std::cout << "Black to play: " << std::endl;
+            else
+                std::cout << "White to play: " << std::endl;
+        }
         print_board(board);
-        
-        // auto& current_agent = (board.turn == 'B') ? black_agent : white_agent;
-        // uint64_t move = current_agent->get_move(board);
         
         IAgent& current_agent = *(board.turn == 'B' ? black_agent : white_agent);
         uint64_t move = current_agent.get_move(board);
@@ -102,19 +79,16 @@ int main(int argc, char** argv)
             continue;
         }
         
+        std::cout << "Move played: " << get_str_move(move) << std::endl;  
+        std::cout << std::endl;
+
         board = make_move(board, move);
-        board.legal = get_legal_moves(board);
     }
     
-    // Print final position
+    // --- Game Over ---
     std::vector<int> count = get_piece_count(board);
+    std::string result_message = (count[0] > count[1]) ? "Black has won." : (count[0] < count[1]) ? "White has won." : "Draw.";
     
-    std::string result_message = 
-          (count[0] > count[1]) ? "Black has won."
-        : (count[0] < count[1]) ? "White has won."
-        : "Draw.";
-    
-    std::cout << std::endl;
     std::cout << "Game over. " << result_message << std::endl;
     std::cout << "Black: " << count[0] << " White: " << count[1] << std::endl;
     print_board(board);

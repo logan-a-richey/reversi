@@ -10,7 +10,7 @@ BUILD_DIR := build
 BIN_DIR := bin
 
 # Target
-TARGET := $(BIN_DIR)/othello.exe
+TARGET := $(BIN_DIR)/reversi.exe
 
 # Find all .cpp files
 SRC_FILES := $(wildcard $(SRC_DIR)/*.cpp)

@@ -9,16 +9,14 @@
 uint64_t AgentHumanTerminal::get_move(const Board& board)
 {
     static std::regex pattern("^[a-h][1-8]$");
-
-    uint64_t int_move;
     
+    uint64_t int_move;
+     
     while (true)
     {
+        std::cout << "Input: ";
+        
         std::string str_move;
-        
-        if (board.turn == 'B') std::cout << "Black to play: ";
-        else std::cout << "White to play: ";
-        
         std::cin >> str_move;
 
         if (!(std::regex_match(str_move, pattern)))

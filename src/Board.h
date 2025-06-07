@@ -19,6 +19,9 @@ public:
     // legal moves are loaded into the position upon construction
     // legal moves need to be recalculated if we mutate the turn variable
     uint64_t legal;
+    
+    bool is_skipped;
+    bool is_game_over;
 
     // constructor
     Board(uint64_t b, uint64_t w, char t);
