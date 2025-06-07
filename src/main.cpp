@@ -46,16 +46,51 @@ int main(int argc, char** argv)
 
     std::unique_ptr<IAgent> black_agent = create_agent(p1_type);
     std::unique_ptr<IAgent> white_agent = create_agent(p2_type);
+    
+    bool game_over = false;
+    bool black_passed = false;
+    bool white_passed = false;
 
-    while(board.legal != 0)
+    while(!game_over)
     {
         std::cout << std::endl;
         std::string msg = (board.turn == 'B') ? "Black" : "White";
+       
+        if (board.legal == 0)
+        {
+            std::cout << msg << " has no legal moves. Passing turn." << std::endl;
+            if (board.turn == 'B')
+            {
+                black_passed = true;
+                board.turn = 'W';
+            }
+            else 
+            {
+                white_passed = true;
+                board.turn = 'B';
+            }
+
+            // end game if both players have been passed
+            if (black_passed && white_passed)
+            {
+                game_over = true;
+                // break;
+            }
+
+            board.legal = get_legal_moves(board);
+            continue;
+        }
+
+        // Reset Player passed
+        black_passed = (board.turn == 'B') ? false : black_passed;
+        white_passed = (board.turn == 'W') ? false : white_passed;
+        
+        // Terminal turn message:
         std::cout << "Turn: " <<  msg << std::endl;
         print_board(board);
         
         auto& current_agent = (board.turn == 'B') ? black_agent : white_agent;
-
+        
         uint64_t move = current_agent->get_move(board);
         
         if (!(move & board.legal))
@@ -65,11 +100,22 @@ int main(int argc, char** argv)
         }
         
         board = make_move(board, move);
+        board.legal = get_legal_moves(board);
     }
+    
     // Print final position
+    std::vector<int> count = get_piece_count(board);
+    
+    std::string result_message = 
+          (count[0] > count[1]) ? "Black has won."
+        : (count[0] < count[1]) ? "White has won."
+        : "Draw.";
+    
+    std::cout << std::endl;
+    std::cout << "Game over. " << result_message << std::endl;
+    std::cout << "Black: " << count[0] << " White: " << count[1] << std::endl;
     print_board(board);
 
-    // TODO - print final score
     return 0;
 }
 

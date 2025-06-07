@@ -206,19 +206,31 @@ Board make_move(const Board& board, uint64_t move)
     } else if (board.turn == 'W') {
         white |= move;
     }
-    
+   
+    // Always flip the turn upon making a move
     char turn = (board.turn == 'B') ? 'W' : 'B';
     
     Board new_board(black, white, turn);
     
-    // if no moves, toggle turn back to current player
-    if (new_board.legal == 0) {
-        new_board.turn = board.turn;
-    }
-    
-    // TODO
-    // check for no legal moves in the game loop. 
-    // if there are no legal moves, call game_over
     return new_board;
+}
+
+/*****************************************************************************/
+
+std::vector<int> get_piece_count(const Board& board)
+{
+    int white_count = 0;
+    int black_count = 0;
+
+    for (int i = 0; i < 64; ++i)
+    {
+        if (1ULL << i & board.white) {
+            white_count++;
+        }
+        if (1ULL << i & board.black) {
+            black_count++;
+        }
+    }
+    return {black_count, white_count};
 }
 
