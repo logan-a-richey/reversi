@@ -40,7 +40,8 @@ int main(int argc, char** argv)
     // TODO - do with string streams
     int p1_type = std::atoi(argv[1]);
     int p2_type = std::atoi(argv[2]);
-    
+   
+    // TODO - abstract game logic away into GameManager
     // auto game = GameManager();
     Board board = get_start_position();
 
