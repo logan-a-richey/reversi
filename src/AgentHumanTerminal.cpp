@@ -1,21 +1,21 @@
 // AgentHumanTerminal.h
 
-#include <iostream>
 #include <cstdint>
+#include <iostream>
 #include <regex>
 
 #include "AgentHumanTerminal.h"
 
-uint64_t AgentHumanTerminal::get_move(const Board& board)
+uint64_t AgentHumanTerminal::get_move(const Board &board)
 {
     static std::regex pattern("^[a-h][1-8]$");
-    
+
     uint64_t int_move;
-     
+
     while (true)
     {
         std::cout << "Input: ";
-        
+
         std::string str_move;
         std::cin >> str_move;
 
@@ -24,7 +24,7 @@ uint64_t AgentHumanTerminal::get_move(const Board& board)
             std::cout << "Expected <letter><number>. Try again." << std::endl;
             continue;
         }
-        
+
         char file = str_move[0];
         char rank = str_move[1];
 

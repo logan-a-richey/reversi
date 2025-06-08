@@ -2,15 +2,13 @@
 
 #pragma once
 
-#include <cstdint>
 #include "IAgent.h"
+#include <cstdint>
 
 class Board;
 
-class AgentHumanTerminal : public IAgent 
+class AgentHumanTerminal : public IAgent
 {
-public:
-    uint64_t get_move(const Board& board) override;
+  public:
+    uint64_t get_move(const Board &board) override;
 };
-
-

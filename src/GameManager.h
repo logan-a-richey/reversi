@@ -8,13 +8,13 @@
 
 #include "Board.h"
 
-class GameManager 
+class GameManager
 {
-public:
+  public:
     int p1_type;
     int p2_type;
     std::vector<Board> history;
-    
+
     GameManager(int p1_type, int p2_type);
     void run();
 };

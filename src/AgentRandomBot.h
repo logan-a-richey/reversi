@@ -2,14 +2,14 @@
 
 #pragma once
 
-#include <cstdint>
 #include "IAgent.h"
+#include <cstdint>
 
 class Board;
 
-class AgentRandomBot : public IAgent 
+class AgentRandomBot : public IAgent
 {
-public:
+  public:
     AgentRandomBot();
-    uint64_t get_move(const Board& board) override;
+    uint64_t get_move(const Board &board) override;
 };
