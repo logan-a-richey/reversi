@@ -8,6 +8,7 @@
 #include "core/reversi_utils.h"
 #include "agents/AgentMinimax.h"
 
+/*
 static const int tile_weights[64] = {
     100, -20, 10,  5,  5, 10, -20, 100,
     -20, -50, -2, -2, -2, -2, -50, -20,
@@ -19,6 +20,91 @@ static const int tile_weights[64] = {
     100, -20, 10,  5,  5, 10, -20, 100
 };
 
+// --- Private ---
+int AgentMinimax::evaluate(const Board& board)
+{
+    if (board.is_game_over)
+    {
+        int black_count = Reversi::popcount64(board.black);
+        int white_count = Reversi::popcount64(board.white);
+        int diff = black_count - white_count;
+
+        return (board.turn == 'B') ? diff * 1000 : -diff * 1000;
+    }
+
+    int black_score = 0;
+    int white_score = 0;
+
+    for (int i = 0; i < 64; ++i)
+    {
+        uint64_t mask = 1ULL << i;
+        if (board.black & mask) black_score += tile_weights[i];
+        if (board.white & mask) white_score += tile_weights[i];
+    }
+
+    int positional_score = black_score - white_score;
+    int mobility_score = Reversi::popcount64(board.legal);
+
+    return (board.turn == 'B')
+        ? (positional_score + mobility_score)
+        : -(positional_score + mobility_score);
+}
+
+int AgentMinimax::minimax(const Board& board, int depth, int alpha, int beta)
+{
+    if (depth == 0 || board.is_game_over)
+        return evaluate(board);
+
+    int best = std::numeric_limits<int>::min();
+
+    for (int i = 0; i < 64; ++i)
+    {
+        uint64_t move = 1ULL << i;
+        if (!(move & board.legal)) continue;
+
+        Board child = Reversi::make_move(board, move);
+
+        int score = -minimax(child, depth - 1, -beta, -alpha); // Negamax
+
+        best = std::max(best, score);
+        alpha = std::max(alpha, score);
+        if (alpha >= beta)
+            break;
+    }
+
+    return best;
+}
+
+// --- Public ---
+uint64_t AgentMinimax::get_move(const Board& board)
+{
+    static const int depth = 5;
+
+    uint64_t best_move = 0ULL;
+    int best_score = std::numeric_limits<int>::min();
+
+    for (int i = 0; i < 64; ++i)
+    {
+        uint64_t move = 1ULL << i;
+        if (!(move & board.legal)) continue;
+
+        Board child = Reversi::make_move(board, move);
+
+        int score = -minimax( child, depth - 1, std::numeric_limits<int>::min(), std::numeric_limits<int>::max());
+
+        if (score > best_score)
+        {
+            best_score = score;
+            best_move = move;
+        }
+    }
+
+    return best_move;
+}
+*/
+
+
+// Old Version:
 // --- Private ---
 int AgentMinimax::evaluate(const Board &board)
 {
