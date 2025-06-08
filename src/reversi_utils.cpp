@@ -109,12 +109,6 @@ static const std::vector<Direction> DIRECTIONS = {
 
 static bool generic_search(uint64_t plr, uint64_t opp, uint64_t sq, const Direction& dir)
 {
-    // already at edge
-    if (sq & dir.border_mask) 
-    {
-        return false; 
-    }
-
     // compare bits
     uint64_t mask = sq;
     bool seen_opp = false;
@@ -172,9 +166,6 @@ uint64_t get_legal_moves(const Board& board)
 // TODO
 static uint64_t generic_flip(uint64_t plr, uint64_t opp, uint64_t sq, const Direction& dir)
 {
-    if (sq & dir.border_mask)
-        return 0ULL;
-
     uint64_t flipped = 0;
     uint64_t mask = sq;
 
@@ -182,14 +173,22 @@ static uint64_t generic_flip(uint64_t plr, uint64_t opp, uint64_t sq, const Dire
     {
         mask = dir.shift(mask);
         if (mask == 0 || (mask & dir.border_mask))
+        {
             return 0ULL;
+        }
 
         if (mask & opp)
+        {
             flipped |= mask;    
+        }
         else if (mask & plr)
+        {
             return flipped;
+        }
         else
+        {
             return 0ULL; // empty square
+        }
     }
     return 0ULL;
 }
@@ -205,7 +204,7 @@ uint64_t get_flipped(const Board& board, uint64_t move)
     {
         flipped |= generic_flip(plr, opp, move, dir);
     }
-
+    
     return flipped;
 }
 
@@ -214,13 +213,18 @@ uint64_t get_flipped(const Board& board, uint64_t move)
 
 Board make_move(const Board& board, uint64_t move)
 {
+    // Flip sandwhiched tiles
     uint64_t flipped = get_flipped(board, move);
     uint64_t white = board.white ^ flipped;
     uint64_t black = board.black ^ flipped;
     
-    if (board.turn == 'B') {
+    // Place tile
+    if (board.turn == 'B') 
+    {
         black |= move;
-    } else if (board.turn == 'W') {
+    } 
+    else if (board.turn == 'W') 
+    {
         white |= move;
     }
    
