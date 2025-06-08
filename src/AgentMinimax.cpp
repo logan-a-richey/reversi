@@ -8,20 +8,35 @@
 #include "Board.h"
 #include "reversi_utils.h"
 
+static const int tile_weights[64] = {
+    100, -20, 10,  5,  5, 10, -20, 100,
+    -20, -50, -2, -2, -2, -2, -50, -20,
+     10,  -2,  5,  1,  1,  5,  -2,  10,
+      5,  -2,  1,  0,  0,  1,  -2,   5,
+      5,  -2,  1,  0,  0,  1,  -2,   5,
+     10,  -2,  5,  1,  1,  5,  -2,  10,
+    -20, -50, -2, -2, -2, -2, -50, -20,
+    100, -20, 10,  5,  5, 10, -20, 100
+};
+
 // --- Private ---
 int AgentMinimax::evaluate(const Board &board)
 {
     if (board.is_game_over)
     {
-        auto count = get_piece_count(board);
-        int diff = count[0] - count[1]; // Black - White
+        int black_count = popcount64(board.black);
+        int white_count = popcount64(board.white);
+
+        int diff = black_count - white_count; // Black - White
         return (board.turn == 'B') ? diff * 1000 : -diff * 1000;
     }
 
     int mobility_score = 0;
     for (int i = 0; i < 64; ++i)
+    {
         if ((1ULL << i) & board.legal)
             mobility_score++;
+    }
 
     return mobility_score;
 }

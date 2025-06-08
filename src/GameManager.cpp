@@ -10,9 +10,8 @@
 #include "IAgent.h"
 #include "reversi_utils.h"
 
-GameManager::GameManager(int _p1_type, int _p2_type) : p1_type(_p1_type), p2_type(_p2_type)
-{
-}
+GameManager::GameManager(int _p1_type, int _p2_type) 
+    : p1_type(_p1_type), p2_type(_p2_type) {}
 
 void GameManager::run()
 {
@@ -62,12 +61,16 @@ void GameManager::run()
     }
 
     // --- Game Over ---
-    std::vector<int> count = get_piece_count(board);
-    std::string result_message = (count[0] > count[1])   ? "Black has won."
-                                 : (count[0] < count[1]) ? "White has won."
-                                                         : "Draw.";
+    int black_count = popcount64(board.black);
+    int white_count = popcount64(board.white);
+    
+    std::string result_message = 
+          (white_count > black_count) ? "Black has won."
+        : (white_count < black_count) ? "White has won."
+        : "Draw.";
 
     std::cout << "Game over. " << result_message << std::endl;
-    std::cout << "Black: " << count[0] << " White: " << count[1] << std::endl;
+    std::cout << "Black: " << black_count << " White: " << white_count << std::endl;
     print_board(board);
 }
+

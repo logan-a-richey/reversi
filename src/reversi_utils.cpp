@@ -4,6 +4,7 @@
 #include <functional>
 #include <iostream>
 #include <vector>
+#include <utility>
 
 #include "Board.h"
 #include "reversi_utils.h"
@@ -23,23 +24,16 @@ Board get_start_position()
 void print_bb(uint64_t bb)
 {
     uint64_t bit = 1;
-    int it = 0;
     for (int i = 0; i < 64; ++i)
     {
         if (i % 8 == 0 && i != 0)
-        {
             std::cout << "\n";
-        }
 
         if (bit << i & bb)
-        {
             std::cout << "x ";
-        }
         else
-        {
             std::cout << ". ";
-        }
-        it++;
+        
     }
     std::cout << std::endl;
 }
@@ -51,26 +45,16 @@ void print_board(const Board &board)
     for (int i = 0; i < 64; ++i)
     {
         if (i % 8 == 0)
-        {
             std::cout << "\n" << i / 8 + 1 << " ";
-        }
 
         if (bit << i & board.black)
-        {
             std::cout << "x ";
-        }
         else if (bit << i & board.white)
-        {
             std::cout << "o ";
-        }
         else if (bit << i & board.legal)
-        {
             std::cout << "* ";
-        }
         else
-        {
             std::cout << ". ";
-        }
     }
     std::cout << std::endl;
 }
@@ -136,23 +120,14 @@ static bool generic_search(uint64_t plr, uint64_t opp, uint64_t sq, const Direct
     {
         mask = dir.shift(mask);
         if (mask == 0 || (mask & dir.border_mask))
-        {
             return false;
-        }
 
         if (mask & opp)
-        {
             seen_opp = true;
-        }
         else if (mask & plr)
-        {
             return seen_opp;
-        }
         else
-        {
-            // empty square
-            return false;
-        }
+            return false; // empty square
     }
     return false;
 }
@@ -199,22 +174,14 @@ static uint64_t generic_flip(uint64_t plr, uint64_t opp, uint64_t sq, const Dire
     {
         mask = dir.shift(mask);
         if (mask == 0 || (mask & dir.border_mask))
-        {
             return 0ULL;
-        }
 
         if (mask & opp)
-        {
             flipped |= mask;
-        }
         else if (mask & plr)
-        {
             return flipped;
-        }
         else
-        {
             return 0ULL; // empty square
-        }
     }
     return 0ULL;
 }
@@ -227,9 +194,7 @@ uint64_t get_flipped(const Board &board, uint64_t move)
     uint64_t opp = (board.turn == 'B') ? board.white : board.black;
 
     for (const auto &dir : DIRECTIONS)
-    {
         flipped |= generic_flip(plr, opp, move, dir);
-    }
 
     return flipped;
 }
@@ -246,13 +211,9 @@ Board make_move(const Board &board, uint64_t move)
 
     // Place tile
     if (board.turn == 'B')
-    {
         black |= move;
-    }
     else if (board.turn == 'W')
-    {
         white |= move;
-    }
 
     // Always flip the turn upon making a move
     char turn = (board.turn == 'B') ? 'W' : 'B';
@@ -264,21 +225,19 @@ Board make_move(const Board &board, uint64_t move)
 
 /*****************************************************************************/
 
-std::vector<int> get_piece_count(const Board &board)
-{
-    int white_count = 0;
-    int black_count = 0;
+constexpr uint64_t m1  = 0x5555555555555555ULL; // 0101...
+constexpr uint64_t m2  = 0x3333333333333333ULL; // 0011...
+constexpr uint64_t m4  = 0x0F0F0F0F0F0F0F0FULL; // 00001111...
 
-    for (int i = 0; i < 64; ++i)
-    {
-        if (1ULL << i & board.white)
-        {
-            white_count++;
-        }
-        if (1ULL << i & board.black)
-        {
-            black_count++;
-        }
-    }
-    return {black_count, white_count};
+// counts number of bits in a bitboard using Hamming weight algorithm
+int popcount64(uint64_t x)
+{
+    x -= (x >> 1) & m1;             // count of each 2 bits
+    x = (x & m2) + ((x >> 2) & m2); // count of each 4 bits
+    x = (x + (x >> 4)) & m4;        // count of each 8 bits
+    x += x >> 8;
+    x += x >> 16;
+    x += x >> 32;
+    return static_cast<int>(x & 0x7F);
 }
+
