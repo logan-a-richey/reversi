@@ -5,8 +5,8 @@
 #include <iostream>
 #include <vector>
 
-#include "AgentRandomBot.h"
-#include "Board.h"
+#include "core/Board.h"
+#include "agents/AgentRandomBot.h"
 
 AgentRandomBot::AgentRandomBot()
 {

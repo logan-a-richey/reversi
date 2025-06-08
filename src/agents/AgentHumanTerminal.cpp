@@ -4,7 +4,7 @@
 #include <iostream>
 #include <regex>
 
-#include "AgentHumanTerminal.h"
+#include "agents/AgentHumanTerminal.h"
 
 uint64_t AgentHumanTerminal::get_move(const Board &board)
 {

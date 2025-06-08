@@ -1,7 +1,9 @@
 // AgentFactory.h
 
 #pragma once
-#include "IAgent.h"
+
 #include <memory>
+
+#include "agents/IAgent.h"
 
 std::unique_ptr<IAgent> create_agent(int type);

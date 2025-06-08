@@ -3,11 +3,11 @@
 #include <iostream>
 #include <memory>
 
-#include "AgentFactory.h"
-#include "AgentHumanTerminal.h"
-#include "AgentMinimax.h"
-#include "AgentRandomBot.h"
-#include "IAgent.h"
+#include "agents/AgentFactory.h"
+#include "agents/AgentHumanTerminal.h"
+#include "agents/AgentMinimax.h"
+#include "agents/AgentRandomBot.h"
+#include "agents/IAgent.h"
 
 std::unique_ptr<IAgent> create_agent(int type)
 {

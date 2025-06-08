@@ -1,7 +1,7 @@
 // IAgent.h
 
 #pragma once
-#include "Board.h"
+#include "core/Board.h"
 #include <cstdint>
 
 class IAgent

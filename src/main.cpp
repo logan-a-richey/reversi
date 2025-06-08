@@ -1,8 +1,8 @@
 // main.cpp
 // Entry point for command-line-interface (CLI) version of Reversi
 
-#include "GameManager.h"
 #include <iostream>
+#include "core/GameManager.h"
 
 int main(int argc, char **argv)
 {

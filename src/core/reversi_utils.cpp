@@ -4,13 +4,12 @@
 #include <functional>
 #include <iostream>
 #include <vector>
-#include <utility>
 
-#include "Board.h"
-#include "reversi_utils.h"
+#include "core/Board.h"
+#include "core/reversi_utils.h"
 
 /*****************************************************************************/
-Board get_start_position()
+Board Reversi::get_start_position()
 {
     uint64_t white = 0x0000001008000000ULL;
     uint64_t black = 0x0000000810000000ULL;
@@ -21,7 +20,7 @@ Board get_start_position()
 }
 
 /*****************************************************************************/
-void print_bb(uint64_t bb)
+void Reversi::print_bb(uint64_t bb)
 {
     uint64_t bit = 1;
     for (int i = 0; i < 64; ++i)
@@ -38,7 +37,7 @@ void print_bb(uint64_t bb)
     std::cout << std::endl;
 }
 
-void print_board(const Board &board)
+void Reversi::print_board(const Board &board)
 {
     std::cout << "  a b c d e f g h";
     uint64_t bit = 1;
@@ -60,7 +59,7 @@ void print_board(const Board &board)
 }
 
 /*****************************************************************************/
-std::string get_str_move(uint64_t move)
+std::string Reversi::get_str_move(uint64_t move)
 {
     std::string res = "";
 
@@ -132,7 +131,7 @@ static bool generic_search(uint64_t plr, uint64_t opp, uint64_t sq, const Direct
     return false;
 }
 
-uint64_t get_legal_moves(const Board &board)
+uint64_t Reversi::get_legal_moves(const Board &board)
 {
     uint64_t legal_moves = 0;
 
@@ -186,7 +185,7 @@ static uint64_t generic_flip(uint64_t plr, uint64_t opp, uint64_t sq, const Dire
     return 0ULL;
 }
 
-uint64_t get_flipped(const Board &board, uint64_t move)
+uint64_t Reversi::get_flipped(const Board& board, uint64_t move)
 {
     uint64_t flipped = 0ULL;
 
@@ -202,7 +201,7 @@ uint64_t get_flipped(const Board &board, uint64_t move)
 /*****************************************************************************/
 // Make move
 
-Board make_move(const Board &board, uint64_t move)
+Board Reversi::make_move(const Board& board, uint64_t move)
 {
     // Flip sandwhiched tiles
     uint64_t flipped = get_flipped(board, move);
@@ -230,7 +229,7 @@ constexpr uint64_t m2  = 0x3333333333333333ULL; // 0011...
 constexpr uint64_t m4  = 0x0F0F0F0F0F0F0F0FULL; // 00001111...
 
 // counts number of bits in a bitboard using Hamming weight algorithm
-int popcount64(uint64_t x)
+int Reversi::popcount64(uint64_t x)
 {
     x -= (x >> 1) & m1;             // count of each 2 bits
     x = (x & m2) + ((x >> 2) & m2); // count of each 4 bits
