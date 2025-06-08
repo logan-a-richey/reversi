@@ -1,5 +1,5 @@
 # Othello (C++)
-> [!WARNING]
+> [!NOTE]
 > This repo is still in active development! 
 > Core features and functionality are still in progress. 
 
@@ -15,9 +15,10 @@ This is a **portfolio project** designed to demonstrate:
 ## Features:
 * Playable command-line version 
 * Random-mover engine
+* Mini-max engine
 
 ## TODO:
-* Mini-max engine
+* Improve strength of Mini-max engine
 * Minimal GUI: OpenGL Canvas Context
 * wxWidgets GUI w/ OpenGL Canvas Context
 * imGui GUI w/ OpenGL Canvas Context
