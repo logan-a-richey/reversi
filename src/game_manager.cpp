@@ -1,5 +1,7 @@
 // game_manager.cpp
 
+#include <iostream>
+
 #include "game_manager.h"
 #include "agent_factory.h"
 

@@ -17,7 +17,7 @@ int main(int argc, char** argv)
       p1_t = std::atoi(argv[1]);
       p2_t = std::atoi(argv[2]);
       break;
-    case default:
+    default:
       break;
   }
 
