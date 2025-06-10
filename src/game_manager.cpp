@@ -8,6 +8,8 @@
 #include "game_manager.h"
 #include "agent_factory.h"
 
+// Debug
+/*
 void test_case()
 {
   uint64_t white = str_to_bb("a1");
@@ -31,13 +33,17 @@ void test_case()
   
   print_board(board);
 }
+*/
 
 void GameManager::run(int p1_t, int p2_t)
 {
   std::cout << "Playing game." << std::endl;
-  test_case();
 
+  // Debug
+  /*
+  test_case();
   return;
+  */
 
   Board board = get_start_position();
   init_board_state(board);

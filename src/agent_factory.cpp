@@ -7,7 +7,7 @@
 #include "agent_interface.h"
 #include "agent_human_terminal.h"
 // #include "agent_human_gui.h"
-// #include "agent_bot_random.h"
+#include "agent_bot_random.h"
 // #include "agent_bot_minimax.h"
 
 std::unique_ptr<AgentInterface> create_agent(int agent_type) {
@@ -16,11 +16,10 @@ std::unique_ptr<AgentInterface> create_agent(int agent_type) {
     case 0:
       return std::make_unique<AgentHumanTerminal>();      
       break;
-    /* 
     case 1:
       return std::make_unique<AgentBotRandom>();      
       break;
-    
+    /*    
     case 2:
       return std::make_unique<AgentBotMinimax>();      
       break;
@@ -30,5 +29,4 @@ std::unique_ptr<AgentInterface> create_agent(int agent_type) {
       exit(1);
   }
 }
-
 
