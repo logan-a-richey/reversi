@@ -8,28 +8,23 @@
 #include "board.h"
 #include "move.h"
 
-Move AgentHumanTerminal::get_move(const Board &board)
-{
-    while (true)
-    {
-        std::cout << "Input: ";
+Move AgentHumanTerminal::get_move(const Board &board) {
+  while (true) {
+    std::cout << "Input: ";
 
-        std::string str_move;
-        std::cin >> str_move;
+    std::string str_move;
+    std::cin >> str_move;
 
-        bool is_legal_move = false;
-        for (auto move : board.legal_moves)
-        {
-            if (str_move == move.symbol)
-            {
-                is_legal_move = true;
-                return move;
-            }
-        }
-
-        if (!is_legal_move)
-        {
-            std::cout << "Invalid or illegal move. Try again." << std::endl;
-        }
+    bool is_legal_move = false;
+    for (auto move : board.legal_moves) {
+      if (str_move == move.symbol) {
+        is_legal_move = true;
+        return move;
+      }
     }
+
+    if (!is_legal_move) {
+      std::cout << "Invalid or illegal move. Try again." << std::endl;
+    }
+  }
 }

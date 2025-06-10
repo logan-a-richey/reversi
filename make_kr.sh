@@ -8,7 +8,7 @@ cd "$SCRIPT_DIR"
 # Write K&R style .clang-format config (optional)
 cat > .clang-format <<EOF
 BasedOnStyle: LLVM
-IndentWidth: 4
+IndentWidth: 2
 UseTab: Never
 BreakBeforeBraces: Attach
 AccessModifierOffset: -2
@@ -18,7 +18,7 @@ AllowShortIfStatementsOnASingleLine: true
 AllowShortLoopsOnASingleLine: true
 
 IndentCaseLabels: true
-ColumnLimit: 100
+ColumnLimit: 80
 EOF
 
 # Format all relevant files in src/

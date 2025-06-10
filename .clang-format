@@ -1,12 +1,12 @@
 BasedOnStyle: LLVM
-IndentWidth: 4
+IndentWidth: 2
 UseTab: Never
-BreakBeforeBraces: Allman
+BreakBeforeBraces: Attach
 AccessModifierOffset: -2
 
-AllowShortFunctionsOnASingleLine: false
-AllowShortIfStatementsOnASingleLine: false
-AllowShortLoopsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortIfStatementsOnASingleLine: true
+AllowShortLoopsOnASingleLine: true
 
 IndentCaseLabels: true
-ColumnLimit: 100
+ColumnLimit: 80

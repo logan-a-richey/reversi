@@ -10,23 +10,21 @@
 #include "agent_bot_random.h"
 // #include "agent_bot_minimax.h"
 
-std::unique_ptr<AgentInterface> create_agent(int agent_type)
-{
-    switch (agent_type)
-    {
-        case 0:
-            return std::make_unique<AgentHumanTerminal>();
-            break;
-        case 1:
-            return std::make_unique<AgentBotRandom>();
-            break;
-        /*
-        case 2:
-          return std::make_unique<AgentBotMinimax>();
-          break;
-        */
-        default:
-            std::cerr << "Unknown agent type: " << agent_type << std::endl;
-            exit(1);
-    }
+std::unique_ptr<AgentInterface> create_agent(int agent_type) {
+  switch (agent_type) {
+    case 0:
+      return std::make_unique<AgentHumanTerminal>();
+      break;
+    case 1:
+      return std::make_unique<AgentBotRandom>();
+      break;
+    /*
+    case 2:
+      return std::make_unique<AgentBotMinimax>();
+      break;
+    */
+    default:
+      std::cerr << "Unknown agent type: " << agent_type << std::endl;
+      exit(1);
+  }
 }
