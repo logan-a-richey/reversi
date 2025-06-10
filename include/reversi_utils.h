@@ -3,21 +3,21 @@
 #pragma once
 
 #include <cstdint>
-#include <vector>
-#include <string>
 #include <optional>
+#include <string>
+#include <vector>
 
-#include "move.h"
 #include "board.h"
+#include "move.h"
 
 /******************************************************************************/
 // declarations:
-void print_board(const Board& board);
+void print_board(const Board &board);
 
 void print_bb(uint64_t bb);
 
 // conversion functions
-uint64_t str_to_bb(const std::string& x);
+uint64_t str_to_bb(const std::string &x);
 
 std::string bb_to_str(uint64_t x);
 
@@ -26,11 +26,11 @@ int popcount64(uint64_t x);
 // position setup
 Board get_start_position();
 
-void init_board_state(Board& board);
+void init_board_state(Board &board);
 
 // legal moves
-std::vector<Move> generate_legal_moves(const Board& board);
+std::vector<Move> generate_legal_moves(const Board &board);
 
-std::optional<Move> find_move(const Board& board, const std::string& symbol);
+std::optional<Move> find_move(const Board &board, const std::string &symbol);
 
-Board make_move(const Board& board, const Move& move);
+Board make_move(const Board &board, const Move &move);
