@@ -6,7 +6,7 @@
 #include <string>
 
 class Move {
-  public:
+public:
     uint64_t move_bb;
     uint64_t flipped_bb;
     std::string symbol;

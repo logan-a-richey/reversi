@@ -173,7 +173,7 @@ constexpr uint64_t FILE_H = 0x8080808080808080ULL;
 using ShiftFunc = std::function<uint64_t(uint64_t)>;
 
 class Direction {
-  public:
+public:
     ShiftFunc shift;
     uint64_t border_mask;
 };

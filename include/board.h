@@ -9,7 +9,7 @@
 #include "player.h"
 
 class Board {
-  public:
+public:
     uint64_t p1_bb;
     uint64_t p2_bb;
     int turn;
