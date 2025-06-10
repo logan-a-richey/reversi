@@ -7,7 +7,7 @@ class Board;
 class Move;
 
 class AgentBotRandom : public AgentInterface {
-public:
-  Move get_move(const Board &board) override;
-  AgentBotRandom();
+  public:
+    Move get_move(const Board &board) override;
+    AgentBotRandom();
 };

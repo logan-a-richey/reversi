@@ -7,6 +7,6 @@ class Board;
 class Move;
 
 class AgentHumanTerminal : public AgentInterface {
-public:
-  Move get_move(const Board &board) override;
+  public:
+    Move get_move(const Board &board) override;
 };
