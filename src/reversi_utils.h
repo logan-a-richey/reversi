@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <vector>
 #include <string>
+#include <optional>
 
 #include "move.h"
 #include "board.h"
@@ -30,3 +31,6 @@ void init_board_state(Board& board);
 // legal moves
 std::vector<Move> generate_legal_moves(const Board& board);
 
+std::optional<Move> find_move(const Board& board, const std::string& symbol);
+
+Board make_move(const Board& board, const Move& move);

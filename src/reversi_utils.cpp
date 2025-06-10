@@ -7,6 +7,7 @@
 #include <iostream>
 #include <vector>
 #include <functional>
+#include <optional>
 
 #include "player.h"
 #include "board.h"
@@ -27,8 +28,8 @@ void print_board(const Board& board)
     mask = 1ULL << i;
     if (mask & board.p1_bb) std::cout << "1 ";
     else if (mask & board.p2_bb) std::cout << "2 ";
-    else if (mask & board.legal_bb) std::cout << "X ";
-    else std::cout << ". ";
+    else if (mask & board.legal_bb) std::cout << "* ";
+    else std::cout << "_ ";
   }
   std::cout << std::endl;
 }
@@ -202,16 +203,19 @@ static uint64_t generic_flip(uint64_t plr, uint64_t opp, uint64_t sq, const Dire
 
     while (true)
     {
-        mask = dir.shift(mask);
-        if (mask == 0 || (mask & dir.border_mask))
-            return 0ULL;
+      if (mask & dir.border_mask)
+        return 0ULL; // would cross the edge
 
-        if (mask & opp)
-            flipped |= mask;
-        else if (mask & plr)
-            return flipped;
-        else
-            return 0ULL; // empty square
+      mask = dir.shift(mask);
+      if (mask == 0)
+        return 0ULL;
+
+      if (mask & opp)
+        flipped |= mask;
+      else if (mask & plr)
+        return flipped;
+      else
+        return 0ULL; // empty square
     }
     return 0ULL;
 }
@@ -252,5 +256,40 @@ std::vector<Move> generate_legal_moves(const Board& board)
   }
 
   return moves;
+}
+
+std::optional<Move> find_move(const Board& board, const std::string& symbol)
+{
+  for (auto m : board.legal_moves)
+  {
+    if (symbol == m.symbol) 
+    {
+      return m;
+    }
+  }
+  return std::nullopt;
+}
+
+Board make_move(const Board& board, const Move& move)
+{
+  // Copy current state
+  Board new_board(board.p1_bb, board.p2_bb, board.turn);
+
+  // Player and opponent bitboards
+  uint64_t& plr = (new_board.turn == PLAYER1) ? new_board.p1_bb : new_board.p2_bb;
+  uint64_t& opp = (new_board.turn == PLAYER1) ? new_board.p2_bb : new_board.p1_bb;
+
+  // Update player and opponent bitboards
+  plr |= move.move_bb;
+  plr |= move.flipped_bb;
+  opp &= ~move.flipped_bb;
+
+  // Flip turn
+  new_board.turn = (new_board.turn == PLAYER1) ? PLAYER2 : PLAYER1;
+
+  // Recalculate board state
+  init_board_state(new_board);
+
+  return new_board;
 }
 
