@@ -7,10 +7,7 @@
 #include <string>
 
 #include "move.h"
-
-/******************************************************************************/
-// forward declarations:
-class Board;
+#include "board.h"
 
 /******************************************************************************/
 // declarations:
@@ -27,6 +24,8 @@ int popcount64(uint64_t x);
 
 // position setup
 Board get_start_position();
+
+void init_board_state(Board& board);
 
 // legal moves
 std::vector<Move> generate_legal_moves(const Board& board);

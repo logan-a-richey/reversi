@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <iostream>
 #include <vector>
+#include <functional>
 
 #include "player.h"
 #include "board.h"
@@ -134,12 +135,122 @@ Board get_start_position()
   return start_position; 
 }
 
+void init_board_state(Board& board)
+{
+  auto moves = generate_legal_moves(board);
+
+  if (!moves.empty()) {
+    board.legal_moves = std::move(moves);
+    board.legal_bb = 0;
+    for (const auto& m : board.legal_moves) {
+      board.legal_bb |= m.move_bb;
+    }
+    return;
+  }
+
+  // No moves? Skip turn
+  board.is_skipped = true;
+  board.turn = (board.turn == PLAYER1) ? PLAYER2 : PLAYER1;
+
+  moves = generate_legal_moves(board);
+  if (!moves.empty()) {
+    board.legal_moves = std::move(moves);
+    board.legal_bb = 0;
+    for (const auto& m : board.legal_moves) {
+      board.legal_bb |= m.move_bb;
+    }
+    return;
+  }
+
+  // No legal moves on second turn either
+  board.is_game_over = true;
+}
+
 /******************************************************************************/
 // legal move generation
 
-std::vector<Move> generate_legal_moves(const Board& baord)
+// Border masks
+constexpr uint64_t RANK_1 = 0x00000000000000FFULL;
+constexpr uint64_t RANK_8 = 0xFF00000000000000ULL;
+constexpr uint64_t FILE_A = 0x0101010101010101ULL;
+constexpr uint64_t FILE_H = 0x8080808080808080ULL;
+
+// Lambda shift
+using ShiftFunc = std::function<uint64_t(uint64_t)>;
+
+class Direction {
+public:
+  ShiftFunc shift;
+  uint64_t border_mask;
+};
+
+static const std::vector<Direction> DIRECTIONS = {
+  {[](uint64_t x) { return x << 8; }, RANK_8},          // N
+  {[](uint64_t x) { return x >> 8; }, RANK_1},          // S
+  {[](uint64_t x) { return x << 1; }, FILE_H},          // E
+  {[](uint64_t x) { return x >> 1; }, FILE_A},          // W
+  {[](uint64_t x) { return x << 9; }, RANK_8 | FILE_H}, // NE
+  {[](uint64_t x) { return x << 7; }, RANK_8 | FILE_A}, // NW
+  {[](uint64_t x) { return x >> 7; }, RANK_1 | FILE_H}, // SE
+  {[](uint64_t x) { return x >> 9; }, RANK_1 | FILE_A}  // SW
+};
+
+static uint64_t generic_flip(uint64_t plr, uint64_t opp, uint64_t sq, const Direction &dir)
 {
-  // TODO
-  return {};
+    uint64_t flipped = 0;
+    uint64_t mask = sq;
+
+    while (true)
+    {
+        mask = dir.shift(mask);
+        if (mask == 0 || (mask & dir.border_mask))
+            return 0ULL;
+
+        if (mask & opp)
+            flipped |= mask;
+        else if (mask & plr)
+            return flipped;
+        else
+            return 0ULL; // empty square
+    }
+    return 0ULL;
+}
+
+std::vector<Move> generate_legal_moves(const Board& board)
+{
+  std::vector<Move> moves;
+
+  uint64_t plr = (board.turn == PLAYER1) ? board.p1_bb : board.p2_bb;
+  uint64_t opp = (board.turn == PLAYER1) ? board.p2_bb : board.p1_bb;
+  uint64_t occ = plr | opp;
+
+  for (int i=0; i<64; ++i)
+  {
+    uint64_t sq = 1ULL << i;
+
+    if (sq & occ) continue;
+
+    bool legal = false;
+    uint64_t total_flipped = 0;
+
+    for (const auto& dir : DIRECTIONS)
+    {
+      uint64_t flipped = generic_flip(plr, opp, sq, dir);
+      if (flipped)
+      {
+        legal = true;
+        total_flipped |= flipped;
+      }
+    }
+
+    if (legal)
+    { 
+      // convert 1ULL << i to something like "d3"
+      std::string symbol = bb_to_str(sq); 
+      moves.emplace_back(sq, total_flipped, symbol);
+    }
+  }
+
+  return moves;
 }
 
