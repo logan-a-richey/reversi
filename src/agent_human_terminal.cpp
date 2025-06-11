@@ -16,7 +16,7 @@ Move AgentHumanTerminal::get_move(const Board &board) {
         std::cin >> str_move;
 
         bool is_legal_move = false;
-        for (auto move : board.legal_moves) {
+        for (const auto &move : board.legal_moves) {
             if (str_move == move.symbol) {
                 is_legal_move = true;
                 return move;

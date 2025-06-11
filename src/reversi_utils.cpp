@@ -279,7 +279,7 @@ std::vector<Move> generate_legal_moves(const Board &board) {
 }
 
 std::optional<Move> find_move(const Board &board, const std::string &symbol) {
-    for (auto m : board.legal_moves) {
+    for (const auto &m : board.legal_moves) {
         if (symbol == m.symbol) {
             return m;
         }
