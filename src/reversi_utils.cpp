@@ -4,7 +4,6 @@
 #include "reversi_utils.h"
 
 #include <cstdint>
-#include <functional>
 #include <iostream>
 #include <optional>
 #include <vector>
@@ -17,20 +16,24 @@
 void print_board(const Board &board) {
     uint64_t mask;
     std::cout << "  a b c d e f g h";
+
     for (int i = 0; i < 64; ++i) {
         if (i % 8 == 0) {
             std::cout << std::endl;
             std::cout << i / 8 + 1 << " ";
         }
+
         mask = 1ULL << i;
-        if (mask & board.p1_bb)
+
+        if (mask & board.p1_bb) {
             std::cout << "1 ";
-        else if (mask & board.p2_bb)
+        } else if (mask & board.p2_bb) {
             std::cout << "2 ";
-        else if (mask & board.legal_bb)
+        } else if (mask & board.legal_bb) {
             std::cout << "* ";
-        else
+        } else {
             std::cout << "_ ";
+        }
     }
     std::cout << std::endl;
 }
@@ -44,10 +47,11 @@ void print_bb(uint64_t bb) {
             std::cout << i / 8 + 1 << " ";
         }
         mask = 1ULL << i;
-        if (mask & bb)
+        if (mask & bb) {
             std::cout << "X ";
-        else
+        } else {
             std::cout << ". ";
+        }
     }
     std::cout << std::endl;
 }
@@ -169,43 +173,72 @@ constexpr uint64_t RANK_8 = 0xFF00000000000000ULL;
 constexpr uint64_t FILE_A = 0x0101010101010101ULL;
 constexpr uint64_t FILE_H = 0x8080808080808080ULL;
 
-// Lambda shift
-using ShiftFunc = std::function<uint64_t(uint64_t)>;
+// Shift Functions
+constexpr uint64_t shiftN(uint64_t x) {
+    return x << 8;
+}
+constexpr uint64_t shiftS(uint64_t x) {
+    return x >> 8;
+}
+constexpr uint64_t shiftE(uint64_t x) {
+    return x << 1;
+}
+constexpr uint64_t shiftW(uint64_t x) {
+    return x >> 1;
+}
+constexpr uint64_t shiftNE(uint64_t x) {
+    return x << 9;
+}
+constexpr uint64_t shiftNW(uint64_t x) {
+    return x << 7;
+}
+constexpr uint64_t shiftSE(uint64_t x) {
+    return x >> 7;
+}
+constexpr uint64_t shiftSW(uint64_t x) {
+    return x >> 9;
+}
+
+using ShiftFuncPtr = uint64_t (*)(uint64_t);
 
 class Direction {
-public:
-    ShiftFunc shift;
-    uint64_t border_mask;
+  public:
+    ShiftFuncPtr shift;   // shift function pointer
+    uint64_t border_mask; // bound mask to prevent wrapping
 };
 
-static const std::vector<Direction> DIRECTIONS = {
-    {[](uint64_t x) { return x << 8; }, RANK_8},          // N
-    {[](uint64_t x) { return x >> 8; }, RANK_1},          // S
-    {[](uint64_t x) { return x << 1; }, FILE_H},          // E
-    {[](uint64_t x) { return x >> 1; }, FILE_A},          // W
-    {[](uint64_t x) { return x << 9; }, RANK_8 | FILE_H}, // NE
-    {[](uint64_t x) { return x << 7; }, RANK_8 | FILE_A}, // NW
-    {[](uint64_t x) { return x >> 7; }, RANK_1 | FILE_H}, // SE
-    {[](uint64_t x) { return x >> 9; }, RANK_1 | FILE_A}  // SW
+constexpr Direction DIRECTIONS[8] = {
+    {shiftN, RANK_8},           // N
+    {shiftS, RANK_1},           // S
+    {shiftE, FILE_H},           // E
+    {shiftW, FILE_A},           // W
+    {shiftNE, RANK_8 | FILE_H}, // NE
+    {shiftNW, RANK_8 | FILE_A}, // NW
+    {shiftSE, RANK_1 | FILE_H}, // SE
+    {shiftSW, RANK_1 | FILE_A}  // SW
 };
 
-static uint64_t generic_flip(uint64_t plr, uint64_t opp, uint64_t sq,
-                             const Direction &dir) {
+static uint64_t generic_flip(uint64_t plr, uint64_t opp, uint64_t sq, const Direction &dir) {
     uint64_t flipped = 0;
     uint64_t mask = sq;
 
     while (true) {
-        if (mask & dir.border_mask) return 0ULL; // would cross the edge
+        if (mask & dir.border_mask) {
+            return 0ULL; // would cross the edge
+        }
 
         mask = dir.shift(mask);
-        if (mask == 0) return 0ULL;
+        if (mask == 0) {
+            return 0ULL;
+        }
 
-        if (mask & opp)
+        if (mask & opp) {
             flipped |= mask;
-        else if (mask & plr)
+        } else if (mask & plr) {
             return flipped;
-        else
+        } else {
             return 0ULL; // empty square
+        }
     }
     return 0ULL;
 }
@@ -220,7 +253,9 @@ std::vector<Move> generate_legal_moves(const Board &board) {
     for (int i = 0; i < 64; ++i) {
         uint64_t sq = 1ULL << i;
 
-        if (sq & occ) continue;
+        if (sq & occ) {
+            continue;
+        }
 
         bool legal = false;
         uint64_t total_flipped = 0;
@@ -257,10 +292,8 @@ Board make_move(const Board &board, const Move &move) {
     Board new_board(board.p1_bb, board.p2_bb, board.turn);
 
     // Player and opponent bitboards
-    uint64_t &plr =
-        (new_board.turn == PLAYER1) ? new_board.p1_bb : new_board.p2_bb;
-    uint64_t &opp =
-        (new_board.turn == PLAYER1) ? new_board.p2_bb : new_board.p1_bb;
+    uint64_t &plr = (new_board.turn == PLAYER1) ? new_board.p1_bb : new_board.p2_bb;
+    uint64_t &opp = (new_board.turn == PLAYER1) ? new_board.p2_bb : new_board.p1_bb;
 
     // Update player and opponent bitboards
     plr |= move.move_bb;

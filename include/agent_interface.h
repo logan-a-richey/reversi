@@ -6,7 +6,7 @@ class Board;
 class Move;
 
 class AgentInterface {
-public:
+  public:
     virtual ~AgentInterface() = default;
     virtual Move get_move(const Board &board) = 0;
 };

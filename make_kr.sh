@@ -18,7 +18,7 @@ AllowShortIfStatementsOnASingleLine: true
 AllowShortLoopsOnASingleLine: true
 
 IndentCaseLabels: true
-ColumnLimit: 80
+ColumnLimit: 100
 EOF
 
 # Format all relevant files in src/

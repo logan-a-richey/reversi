@@ -3,6 +3,6 @@
 #pragma once
 
 class GameManager {
-public:
+  public:
     void run(int p1_t, int p2_t);
 };
